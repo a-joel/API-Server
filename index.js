@@ -16,4 +16,8 @@ app.use(cors({
 
 app.use('/api', authenticateRoute);
 
+app.get('/', (req, res) => {
+    return res.status(200).send({message: "Sucess", URL: "This is base URL."})
+})
+
 app.listen(5000, () => console.log('✅ Backend running on port 5000'));
