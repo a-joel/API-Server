@@ -30,17 +30,18 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: 'owner' }, JWT_SECRET, { expiresIn: '24h' });
 
     // 🍪 Set the HttpOnly cookie (Frontend JS cannot see or change this)
-    res.cookie('auth_token', token, {
-        httpOnly: true,
-        // MUST be true when deployed to HTTPS (Render)
-        secure: process.env.NODE_ENV === 'production', 
-        
-        // 🌟 THE FIX: 'none' is required for cross-origin requests (localhost -> Render)
-        // 'lax' is fine for local development, 'none' is mandatory for production cross-origin
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
-        
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    });
+    // backend/routes/authentication.js
+
+// 🍪 Set the HttpOnly Session Cookie
+res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    
+    // 🌟 DO NOT INCLUDE maxAge OR expires! 
+    // Without an expiration date, the browser treats this as a "Session Cookie" 
+    // and automatically destroys it the moment the tab/browser is closed.
+});
 
     res.json({ success: true });
 });
