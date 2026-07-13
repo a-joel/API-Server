@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-
 const MASTER_PASSWORD_HASH = process.env.MASTER_PASSWORD_HASH;
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -14,6 +13,11 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // 1. LOGIN: Check password & set cookie
 router.post('/login', async (req, res) => {
     const { password } = req.body;
+
+    // Safety check for env variable
+    if (!MASTER_PASSWORD_HASH) {
+        return res.status(500).json({ message: "Server configuration error." });
+    }
 
     // Compare entered password with the hashed password in .env
     const isMatch = await bcrypt.compare(password, MASTER_PASSWORD_HASH);
@@ -28,8 +32,13 @@ router.post('/login', async (req, res) => {
     // 🍪 Set the HttpOnly cookie (Frontend JS cannot see or change this)
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
-        sameSite: 'strict',
+        // MUST be true when deployed to HTTPS (Render)
+        secure: process.env.NODE_ENV === 'production', 
+        
+        // 🌟 THE FIX: 'none' is required for cross-origin requests (localhost -> Render)
+        // 'lax' is fine for local development, 'none' is mandatory for production cross-origin
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+        
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -48,7 +57,11 @@ router.get('/home-data', requireAuth, (req, res) => {
 
 // 4. LOGOUT: Clear the cookie
 router.post('/logout', (req, res) => {
-    res.clearCookie('auth_token');
+    res.clearCookie('auth_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
     res.json({ success: true });
 });
 
