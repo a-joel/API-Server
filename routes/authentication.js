@@ -66,6 +66,11 @@ router.post('/logout', (req, res) => {
     res.json({ success: true });
 });
 
+//5. Checking server is running or not.
+router.get('/brow', (req, res) => {
+    return res.send({mesage: "Browww 22nd birthday wish authentication url."})
+})
+
 // --- MIDDLEWARE ---
 function requireAuth(req, res, next) {
     const token = req.cookies.auth_token;
@@ -78,5 +83,7 @@ function requireAuth(req, res, next) {
         res.status(403).json({ message: 'Invalid session' });
     }
 }
+
+
 
 module.exports = router;
