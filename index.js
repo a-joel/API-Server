@@ -13,8 +13,11 @@ app.use(cookieParser());
 
 // 🌟 CRITICAL: CORS must allow credentials for cookies to work
 app.use(cors({
-    origin: 'http://localhost:5173', // ⚠️ Change this to your actual frontend URL (e.g., http://localhost:5173)
-    credentials: true                // Allows the browser to send/receive cookies
+    origin: [
+        'http://localhost:5173', // Keep this for local development
+        'https://happy-twenty-two-browwwwwwww.netlify.app' // ADD your live Netlify URL here
+    ],
+    credentials: true // Allows the browser to send/receive cookies
 }));
 
 app.use('/api', authenticateRoute);
